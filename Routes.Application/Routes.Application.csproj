@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <RootNamespace>Routes.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Routes.Domain\Routes.Domain.csproj" />
+      <ProjectReference Include="..\Routes.Utils\Routes.Utils.csproj" />
+    </ItemGroup>
+
+</Project>
