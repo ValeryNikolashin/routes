@@ -2,56 +2,74 @@
 using System.Collections.Generic;
 using System.Linq;
 using Routes.Domain;
-using Routes.Utils;
+using Routes.Domain.Utils;
 
-namespace Routes.Application
+namespace Routes.Application.Internal
 {
-    public sealed class RoutesBuilder
+    internal class OptimalWayBuilder
     {
         private readonly IEnumerable<BusRoute> routes;
 
-        public RoutesBuilder(IEnumerable<BusRoute> routes)
+        protected OptimalWayBuilder(IEnumerable<BusRoute> routes)
         {
             this.routes = routes;
         }
-
-        public Way BuildCheapestWay(int departureStop, int arrivalStop, string departureTime)
+        
+        public Way BuildWay(int departureStop, int arrivalStop, string departureTime)
         {
             var departureTimeInMinutes = TimeConverter.TimeToMinutes(departureTime);
             
             var routesPassingThroughDepartureStop = GetRoutesPassingThroughDepartureStop(routes, departureStop).ToList();
 
             var directRoutes = GetDirectRoutes(routesPassingThroughDepartureStop, departureStop, arrivalStop).ToList();
-            var cheapestDirectWay = GetCheapestDirectWay(directRoutes, departureStop, arrivalStop, departureTimeInMinutes);
-            var cheapestDirectWayCoast = cheapestDirectWay.Cost;
+            var optimalDirectWay = GetOptimalDirectWay(directRoutes, departureStop, arrivalStop, departureTimeInMinutes);
 
-            var indirectRoutes = routesPassingThroughDepartureStop
-                .Except(directRoutes)
-                .Where(x => x.Cost < cheapestDirectWayCoast);
+            var indirectRoutes = GetIndirectRoutesWhichMayBeOptimal(
+                routesPassingThroughDepartureStop,
+                directRoutes,
+                optimalDirectWay, departureTimeInMinutes).ToList();
 
-            var cheapestIndirectWay = GetCheapestIndirectWay(
+            var cheapestIndirectWay = GetOptimalIndirectWay(
                 indirectRoutes,
                 departureStop,
                 arrivalStop,
                 departureTimeInMinutes,
-                cheapestDirectWayCoast
+                optimalDirectWay
             );
 
-            return cheapestIndirectWay ?? cheapestDirectWay;
+            return cheapestIndirectWay ?? optimalDirectWay;
+        }
+        
+        protected virtual bool IsFirstWayWithRouteBetterThanSecondImpl(Way first, BusRoute route, Way second)
+        {
+            throw new NotImplementedException();
         }
 
+        protected virtual Way GetOptimalDirectWay(IEnumerable<BusRoute> directRoutes, int departureStop, int arrivalStop,
+            int departureTime)
+        {
+            throw new NotImplementedException();
+        }
+        
+        protected virtual IEnumerable<BusRoute> GetIndirectRoutesWhichMayBeOptimal(
+            IEnumerable<BusRoute> routesPassingThroughDepartureStop,
+            IEnumerable<BusRoute> directRoutes,
+            Way optimalDirectWay,
+            int departureTime
+        )
+        {
+            throw new NotImplementedException();
+        }
 
-        private Way GetCheapestIndirectWay(
+        private Way GetOptimalIndirectWay(
             IEnumerable<BusRoute> indirectRoutes,
             int departureStop,
             int arrivalStop,
             int departureTime,
-            int cheapestCoast
+            Way optimalWay
         )
         {
             if (indirectRoutes == null) return null;
-
-            var cheapestIndirectWays = new List<Way>();
 
             foreach (var indirectRoute in indirectRoutes)
             {
@@ -60,77 +78,67 @@ namespace Routes.Application
                     if (stop == departureStop) continue;
 
                     var routesPassingThroughCurrentStop = GetRoutesPassingThroughDepartureStop(routes, stop)
-                        .Where(x => x != indirectRoute);
+                        .Where(x => x != indirectRoute).ToList();
                     
                     var realDepartureTime = indirectRoute.GetArrivalTime(departureStop, departureTime);
                     var arrivalTimeToCurrentStop = indirectRoute.GetArrivalTime(departureStop, stop, departureTime);
 
                     var directRoutes = GetDirectRoutes(routes, stop, arrivalStop).ToList();
-                    var cheapestDirectWayForCurrentStop = GetCheapestDirectWay(
+                    var optimalDirectWayForCurrentStop = GetOptimalDirectWay(
                         directRoutes,
                         stop,
                         arrivalStop,
                         arrivalTimeToCurrentStop
                     );
-                    if (cheapestDirectWayForCurrentStop != null)
-                        cheapestCoast = Math.Min(cheapestCoast, cheapestDirectWayForCurrentStop.Cost);
-                    var coast = cheapestCoast;
+
+                    if (IsFirstWayWithRouteBetterThanSecond(optimalDirectWayForCurrentStop, indirectRoute, optimalWay))
+                    {
+                        optimalDirectWayForCurrentStop.Trips.Add(new Trip(
+                            indirectRoute.Number,
+                            departureStop,
+                            realDepartureTime,
+                            stop,
+                            arrivalTimeToCurrentStop,
+                            indirectRoute.Cost));
+                        optimalWay = optimalDirectWayForCurrentStop;
+                    }
+
+                    var indirectRoutesForCurrentStop = GetIndirectRoutesWhichMayBeOptimal(
+                        routesPassingThroughCurrentStop,
+                        directRoutes,
+                        optimalWay,
+                        departureTime).ToList();
                     
-                    var indirectRoutesForCurrentStop = routesPassingThroughCurrentStop.Except(directRoutes)
-                        .Where(x => x.Cost < coast);
-                    var cheapestIndirectWayForCurrentStop = GetCheapestIndirectWay(
+                    var optimalIndirectWayForCurrentStop = GetOptimalIndirectWay(
                         indirectRoutesForCurrentStop,
                         stop,
                         arrivalStop,
                         arrivalTimeToCurrentStop,
-                        cheapestCoast
+                        optimalWay
                     );
 
-                    if (cheapestDirectWayForCurrentStop != null)
+                    if (IsFirstWayWithRouteBetterThanSecond(optimalIndirectWayForCurrentStop, indirectRoute, optimalWay))
                     {
-                        cheapestDirectWayForCurrentStop.Trips.Add(new Trip(
+                        optimalIndirectWayForCurrentStop.Trips.Add(new Trip(
                             indirectRoute.Number,
                             departureStop,
                             realDepartureTime,
                             stop,
                             arrivalTimeToCurrentStop,
-                            indirectRoute.Cost)
-                        );
-
-                        cheapestIndirectWays.Add(cheapestDirectWayForCurrentStop);
-                    }
-                    
-                    if (cheapestIndirectWayForCurrentStop != null)
-                    {
-                        cheapestIndirectWayForCurrentStop.Trips.Add(new Trip(
-                            indirectRoute.Number,
-                            departureStop,
-                            realDepartureTime,
-                            stop,
-                            arrivalTimeToCurrentStop,
-                            indirectRoute.Cost)
-                        );
-
-                        cheapestIndirectWays.Add(cheapestIndirectWayForCurrentStop);
+                            indirectRoute.Cost));
+                        optimalWay = optimalIndirectWayForCurrentStop;
                     }
                 }
             }
+            optimalWay?.Trips.Reverse();
 
-            var cheapestIndirectWayCost = cheapestIndirectWays.Any() ? cheapestIndirectWays.Min(y => y.Cost) : 0;
-            
-            var cheapestIndirectWay = cheapestIndirectWays.FirstOrDefault(x => x.Cost == cheapestIndirectWayCost);
-            cheapestIndirectWay?.Trips.Reverse();
-
-            return cheapestIndirectWays.FirstOrDefault(x => x.Cost == cheapestIndirectWayCost);
+            return optimalWay;
         }
 
-        private static Way GetCheapestDirectWay(IEnumerable<BusRoute> directRoutes, int departureStop, int arrivalStop,
-            int departureTime)
+        private bool IsFirstWayWithRouteBetterThanSecond(Way first, BusRoute route, Way second)
         {
-            return directRoutes
-                .Select(route => BuildDirectWay(route, departureStop, arrivalStop, departureTime))
-                .Where(x => !TimeIsOver(x.ArrivalTime))
-                .OrderBy(x=>x.Cost).FirstOrDefault();
+            if (first == null) return false;
+            return second == null || IsFirstWayWithRouteBetterThanSecondImpl(first, route, second);
         }
 
         private static IEnumerable<BusRoute> GetDirectRoutes(IEnumerable<BusRoute> directRoutes, int departureStop,
@@ -145,7 +153,7 @@ namespace Routes.Application
             return directRoutes.Where(x => x.Stops.Contains(departureStop));
         }
 
-        private static Way BuildDirectWay(BusRoute busRoute, int departureStop, int arrivalStop, int departureTime)
+        protected static Way BuildDirectWay(BusRoute busRoute, int departureStop, int arrivalStop, int departureTime)
         {
             var realDepartureTime = busRoute.GetArrivalTime(departureStop, departureTime);
             var arrivalTime = busRoute.GetArrivalTime(departureStop, arrivalStop, departureTime);
@@ -159,7 +167,7 @@ namespace Routes.Application
             );
         }
 
-        private static bool TimeIsOver(int arrivalTime)
+        protected static bool TimeIsOver(int arrivalTime)
         {
             const int maxTimeInMinutes = 60 * 24;
             return arrivalTime > maxTimeInMinutes;

@@ -10,8 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Routes.API", "Routes.API\Ro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Routes.Application", "Routes.Application\Routes.Application.csproj", "{1BB75180-A24D-48C4-9D1F-38BE8754D21C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Routes.Utils", "Routes.Utils\Routes.Utils.csproj", "{99E62046-F502-4EB8-97F2-BA5909CD4A6A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,9 +36,5 @@ Global
 		{1BB75180-A24D-48C4-9D1F-38BE8754D21C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BB75180-A24D-48C4-9D1F-38BE8754D21C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BB75180-A24D-48C4-9D1F-38BE8754D21C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99E62046-F502-4EB8-97F2-BA5909CD4A6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99E62046-F502-4EB8-97F2-BA5909CD4A6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99E62046-F502-4EB8-97F2-BA5909CD4A6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99E62046-F502-4EB8-97F2-BA5909CD4A6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

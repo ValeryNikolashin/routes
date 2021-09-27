@@ -1,15 +1,16 @@
 ﻿using Routes.Application;
+using Routes.Domain;
 using Routes.Reader;
 
 namespace Routes.API
 {
     public sealed class RoutesController
     {
-        private readonly RoutesBuilder routesBuilder;
+        private readonly WaysBuilder _waysBuilder;
 
         public RoutesController(string routesFilePath)
         {
-            routesBuilder = new RoutesBuilder(RoutesReader.Read(routesFilePath));
+            _waysBuilder = new WaysBuilder(RoutesReader.Read(routesFilePath));
         }
 
         /// <summary>
@@ -19,9 +20,9 @@ namespace Routes.API
         /// <param name="endingStop">Остановка прибытия</param>
         /// <param name="time">Время отправления</param>
         /// <returns>Оптимальные маршруты</returns>
-        public Way BuildOptimalRoutes(int beginningStop, int endingStop, string time)
+        public OptimalWaysReport BuildOptimalRoutes(int beginningStop, int endingStop, string time)
         {
-            return routesBuilder.BuildCheapestWay( beginningStop, endingStop, time);
+            return _waysBuilder.Build( beginningStop, endingStop, time);
         } 
     }
 }

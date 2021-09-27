@@ -1,4 +1,4 @@
-﻿namespace Routes.Utils
+﻿namespace Routes.Domain.Utils
 {
     public static class TimeConverter
     {

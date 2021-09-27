@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using static System.Int32;
 
 namespace Routes.Domain
 {
@@ -24,7 +23,7 @@ namespace Routes.Domain
         public int GetArrivalTime(int toStop, int desiredArrivalTime)
         {
             if (!Stops.Contains(toStop))
-                return MaxValue;
+                return int.MaxValue;
 
             var firstArrivalTime = GetFirstArrivalTimeToStop(toStop);
             var routeTime = Intervals.Sum(x => x);

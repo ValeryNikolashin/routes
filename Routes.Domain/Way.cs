@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Routes.Utils;
+using TimeConverter = Routes.Domain.Utils.TimeConverter;
 
-namespace Routes.Application
+namespace Routes.Domain
 {
     public class Way
     {

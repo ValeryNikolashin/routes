@@ -5,4 +5,8 @@
         <LangVersion>9</LangVersion>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Routes.Utils\Routes.Utils.csproj" />
+    </ItemGroup>
+
 </Project>
