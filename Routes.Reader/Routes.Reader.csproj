@@ -7,7 +7,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Routes.Domain\Routes.Domain.csproj" />
-      <ProjectReference Include="..\Routes.Utils\Routes.Utils.csproj" />
     </ItemGroup>
 
 </Project>

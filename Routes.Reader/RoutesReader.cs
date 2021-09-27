@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using Routes.Domain;
-using Routes.Utils;
+using Routes.Domain.Utils;
 
 namespace Routes.Reader
 {
