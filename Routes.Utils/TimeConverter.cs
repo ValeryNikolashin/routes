@@ -10,11 +10,13 @@
 
             return hours * 60 + minutes;
         }
-
-        public static bool TimeIsOver(int arrivalTime)
+        
+        public static string MinutesToTime(int minutes)
         {
-            const int maxTimeInMinutes = 60 * 24;
-            return arrivalTime > maxTimeInMinutes;
+            var timeHours = minutes / 60;
+            var timeMinutes = minutes - timeHours * 60;
+
+            return $"{timeHours}:{timeMinutes}";
         }
     }
 }

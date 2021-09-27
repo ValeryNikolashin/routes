@@ -7,38 +7,45 @@ namespace Routes.Domain
     public sealed class BusRoute
     {
         public int Number { get; }
-        public int Price { get; }
-        public int DepartureTime { get; }
+        public int Cost { get; }
+        private int DepartureTime { get; }
         public List<int> Stops { get; }
-        public List<int> Intervals { get; }
+        private List<int> Intervals { get; }
 
-        public BusRoute(int number, int price, int departureTime, List<int> stops, List<int> intervals)
+        public BusRoute(int number, int cost, int departureTime, List<int> stops, List<int> intervals)
         {
             Number = number;
-            Price = price;
+            Cost = cost;
             Stops = stops;
             Intervals = intervals;
             DepartureTime = departureTime;
         }
 
-        public int GetArrivalTime(int stop, int time)
+        public int GetArrivalTime(int toStop, int desiredArrivalTime)
         {
-            if (!Stops.Contains(stop))
+            if (!Stops.Contains(toStop))
                 return MaxValue;
 
-            var firstArrivalTime = GetFirstArrivalTime(stop);
+            var firstArrivalTime = GetFirstArrivalTimeToStop(toStop);
             var routeTime = Intervals.Sum(x => x);
             var arrivalTime = firstArrivalTime;
 
-            while (arrivalTime<time+routeTime)
+            while (arrivalTime<desiredArrivalTime)
             {
                 arrivalTime += routeTime;
             }
 
             return arrivalTime;
         }
+        
+        public int GetArrivalTime(int fromStop, int toStop, int desiredDepartureTime)
+        {
+            var realDepartureTime = GetArrivalTime(fromStop, desiredDepartureTime);
 
-        private int GetFirstArrivalTime(int stop)
+            return GetArrivalTime(toStop, realDepartureTime);
+        }
+
+        private int GetFirstArrivalTimeToStop(int stop)
         {
             var i = 0;
             var arrivalTime = DepartureTime;

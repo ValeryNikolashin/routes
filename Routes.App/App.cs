@@ -5,8 +5,7 @@ namespace Routes
 {
     class App
     {
-        private static readonly RoutesController Controller = new();
-        
+        private static RoutesController controller;
         static void Main(string[] args)
         {
             Console.WriteLine("Программа для поиска оптимальных маршрутов автобусов.");
@@ -21,7 +20,7 @@ namespace Routes
         {
             Console.WriteLine("Введите путь к файлу с маршрутами:");
             var routesFilePath = Console.ReadLine();
-            Controller.InitRoutesFromFile(routesFilePath);
+            controller = new RoutesController(routesFilePath);
             Console.WriteLine("Маршруты успешно загружены.");
         }
 
@@ -36,8 +35,8 @@ namespace Routes
                 var endingStop = int.Parse(Console.ReadLine());
                 Console.Write("Время отправления (hh:mm): ");
                 var departureTime = Console.ReadLine();
-                var report = Controller.BuildOptimalRoutes(beginningStop, endingStop, departureTime);
-                Console.WriteLine(report);
+                var cheapestWay = controller.BuildOptimalRoutes(beginningStop, endingStop, departureTime);
+                Console.WriteLine(cheapestWay);
                 Console.WriteLine("Для поиска нового маршрута, введите любой символ.");
                 Console.WriteLine("Для загрузки нового файла маршрутов, введите 0.");
                 var menu = Console.ReadLine();

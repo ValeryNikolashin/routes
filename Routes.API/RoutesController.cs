@@ -1,21 +1,15 @@
-﻿using System.Collections.Generic;
-using Routes.Application;
-using Routes.Domain;
+﻿using Routes.Application;
 using Routes.Reader;
 
 namespace Routes.API
 {
     public sealed class RoutesController
     {
-        private IEnumerable<BusRoute> Routes { get; set; }
+        private readonly RoutesBuilder routesBuilder;
 
-        /// <summary>
-        /// Считывает маршруты из файла в память
-        /// </summary>
-        /// <param name="routesFilePath">Путь к файлу с маршрутами</param>
-        public void InitRoutesFromFile(string routesFilePath)
+        public RoutesController(string routesFilePath)
         {
-            Routes = RoutesReader.Read(routesFilePath);
+            routesBuilder = new RoutesBuilder(RoutesReader.Read(routesFilePath));
         }
 
         /// <summary>
@@ -25,9 +19,9 @@ namespace Routes.API
         /// <param name="endingStop">Остановка прибытия</param>
         /// <param name="time">Время отправления</param>
         /// <returns>Оптимальные маршруты</returns>
-        public RoutesBuildingReport BuildOptimalRoutes(int beginningStop, int endingStop, string time)
+        public Way BuildOptimalRoutes(int beginningStop, int endingStop, string time)
         {
-            return RoutesBuilder.Build(Routes, beginningStop, endingStop, time);
+            return routesBuilder.BuildCheapestWay( beginningStop, endingStop, time);
         } 
     }
 }
