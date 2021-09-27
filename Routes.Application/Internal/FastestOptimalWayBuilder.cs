@@ -16,11 +16,12 @@ namespace Routes.Application.Internal
             Way optimalDirectWay,
             int departureTime)
         {
-            var fastestIndirectRoutes = routesPassingThroughDepartureStop
-                .Except(directRoutes)
-                .Where(x => x.Stops.Any(stop=>x.GetArrivalTime(stop, departureTime) < optimalDirectWay.ArrivalTime));
+            var indirectRoutes = routesPassingThroughDepartureStop.Except(directRoutes);
 
-            return fastestIndirectRoutes;
+            return optimalDirectWay != null
+                ? indirectRoutes.Where(x =>
+                    x.Stops.Any(stop => x.GetArrivalTime(stop, departureTime) < optimalDirectWay.ArrivalTime))
+                : indirectRoutes;
         }
 
         protected override bool IsFirstWayWithRouteBetterThanSecondImpl(Way first, BusRoute route, Way second)

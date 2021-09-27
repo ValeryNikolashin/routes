@@ -18,11 +18,12 @@ namespace Routes.Application.Internal
             int departureTime
             )
         {
-            var cheapestIndirectRoutes = routesPassingThroughDepartureStop
-                .Except(directRoutes)
-                .Where(x => x.Cost < optimalDirectWay.Cost);
+            var indirectRoutes = routesPassingThroughDepartureStop
+                .Except(directRoutes);
 
-            return cheapestIndirectRoutes;
+            return optimalDirectWay != null
+                ? indirectRoutes.Where(x => x.Cost < optimalDirectWay.Cost)
+                : indirectRoutes;
         }
 
         protected override Way GetOptimalDirectWay(IEnumerable<BusRoute> directRoutes, int departureStop, int arrivalStop, int departureTime)

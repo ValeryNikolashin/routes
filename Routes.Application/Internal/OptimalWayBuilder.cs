@@ -29,7 +29,7 @@ namespace Routes.Application.Internal
                 directRoutes,
                 optimalDirectWay, departureTimeInMinutes).ToList();
 
-            var cheapestIndirectWay = GetOptimalIndirectWay(
+            var optimalIndirectWay = GetOptimalIndirectWay(
                 indirectRoutes,
                 departureStop,
                 arrivalStop,
@@ -37,7 +37,10 @@ namespace Routes.Application.Internal
                 optimalDirectWay
             );
 
-            return cheapestIndirectWay ?? optimalDirectWay;
+            var optimalWay = optimalIndirectWay ?? optimalDirectWay;
+            optimalWay?.Trips.Reverse();
+
+            return optimalWay;
         }
         
         protected virtual bool IsFirstWayWithRouteBetterThanSecondImpl(Way first, BusRoute route, Way second)
@@ -130,7 +133,6 @@ namespace Routes.Application.Internal
                     }
                 }
             }
-            optimalWay?.Trips.Reverse();
 
             return optimalWay;
         }
