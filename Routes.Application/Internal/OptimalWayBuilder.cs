@@ -83,7 +83,7 @@ namespace Routes.Application.Internal
                     var routesPassingThroughCurrentStop = GetRoutesPassingThroughDepartureStop(routes, stop)
                         .Where(x => x != indirectRoute).ToList();
 
-                    if (!routesPassingThroughCurrentStop.Any()) return null;
+                    if (!routesPassingThroughCurrentStop.Any()) continue;
                     
                     var realDepartureTime = indirectRoute.GetArrivalTime(departureStop, departureTime);
                     var arrivalTimeToCurrentStop = indirectRoute.GetArrivalTime(departureStop, stop, departureTime);
