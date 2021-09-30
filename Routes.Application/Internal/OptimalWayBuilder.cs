@@ -29,9 +29,11 @@ namespace Routes.Application.Internal
                 directRoutes,
                 optimalDirectWay, departureTimeInMinutes).ToList();
 
+            var visitedStops = new List<int> {departureStop};
+
             var optimalIndirectWay = GetOptimalIndirectWay(
                 indirectRoutes,
-                departureStop,
+                visitedStops,
                 arrivalStop,
                 departureTimeInMinutes,
                 optimalDirectWay
@@ -66,7 +68,7 @@ namespace Routes.Application.Internal
 
         private Way GetOptimalIndirectWay(
             IEnumerable<BusRoute> indirectRoutes,
-            int departureStop,
+            IEnumerable<int> visitedStops,
             int arrivalStop,
             int departureTime,
             Way optimalWay
@@ -74,19 +76,22 @@ namespace Routes.Application.Internal
         {
             if (indirectRoutes == null) return null;
 
+            var visitedStopsList = visitedStops.ToList();
+            var lastVisitedStop = visitedStopsList.LastOrDefault();
+
             foreach (var indirectRoute in indirectRoutes)
             {
                 foreach (var stop in indirectRoute.Stops)
                 {
-                    if (stop == departureStop) continue;
+                    if (visitedStopsList.Contains(stop)) continue;
 
                     var routesPassingThroughCurrentStop = GetRoutesPassingThroughDepartureStop(routes, stop)
                         .Where(x => x != indirectRoute).ToList();
 
                     if (!routesPassingThroughCurrentStop.Any()) continue;
                     
-                    var realDepartureTime = indirectRoute.GetArrivalTime(departureStop, departureTime);
-                    var arrivalTimeToCurrentStop = indirectRoute.GetArrivalTime(departureStop, stop, departureTime);
+                    var realDepartureTime = indirectRoute.GetArrivalTime(lastVisitedStop, departureTime);
+                    var arrivalTimeToCurrentStop = indirectRoute.GetArrivalTime(lastVisitedStop, stop, departureTime);
 
                     var directRoutes = GetDirectRoutes(routes, stop, arrivalStop).ToList();
                     var optimalDirectWayForCurrentStop = GetOptimalDirectWay(
@@ -100,7 +105,7 @@ namespace Routes.Application.Internal
                     {
                         optimalDirectWayForCurrentStop.Trips.Add(new Trip(
                             indirectRoute.Number,
-                            departureStop,
+                            lastVisitedStop,
                             realDepartureTime,
                             stop,
                             arrivalTimeToCurrentStop,
@@ -113,10 +118,12 @@ namespace Routes.Application.Internal
                         directRoutes,
                         optimalWay,
                         departureTime).ToList();
-                    
+
+                    var newLastVisitedStops = new List<int>(visitedStopsList) {stop};
+
                     var optimalIndirectWayForCurrentStop = GetOptimalIndirectWay(
                         indirectRoutesForCurrentStop,
-                        stop,
+                        newLastVisitedStops,
                         arrivalStop,
                         arrivalTimeToCurrentStop,
                         optimalWay
@@ -126,7 +133,7 @@ namespace Routes.Application.Internal
                     {
                         optimalIndirectWayForCurrentStop.Trips.Add(new Trip(
                             indirectRoute.Number,
-                            departureStop,
+                            lastVisitedStop,
                             realDepartureTime,
                             stop,
                             arrivalTimeToCurrentStop,
